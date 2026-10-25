@@ -63,6 +63,7 @@ def main(argv=None):
     a = ap.parse_args(argv)
     doc = build(evaluate.load(a.data), a.today)
     out = a.out or os.path.join(a.data, "dashboard.json")
+    os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
     with open(out, "w", encoding="utf-8") as fh:
         json.dump(doc, fh, separators=(",", ":"))
     print("%s: %d companies, %.0f KB" % (out, len(doc["companies"]), os.path.getsize(out) / 1024))

@@ -44,6 +44,13 @@ Data fixes made after the first run touched coverage only, never the models:
 
 [docs/COVERAGE.md](docs/COVERAGE.md) has the item-by-item coverage per company.
 
+### Live test
+
+On 2026-10-25, before any of them reported, the next-quarter forecasts for all 40 companies were
+frozen in [live/2026-10-25.json](live/2026-10-25.json). The git commit date proves they came
+first. After earnings season, `python -m eft.live score live/2026-10-25.json --data data` scores
+them on what the companies reported.
+
 ## Use
 
 Python 3.10+, standard library only for the data layer.
