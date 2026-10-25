@@ -34,7 +34,7 @@ Forecast next-quarter revenue and EPS with these models:
 | --- | --- |
 | Seasonal naive (the baseline) | The same quarter last year |
 | Seasonal growth | The same quarter last year × the trailing 4-quarter year-over-year growth |
-| Regression | A ridge regression on the last 8 quarters: lags 1 and 4, year-over-year growth, margin. Fit per company, falling back to a sector-pooled fit when history is short. |
+| Regression | Ridge regression of next year-over-year log growth on its last three values, fit per company on what was known by the forecast date; falls back to seasonal growth when history is short. For EPS: last year's margin on the forecast revenue. |
 
 - **Walk-forward.** For each company and quarter Q, the forecast date is the day before Q's
   first report. Every input comes from `pit.as_of(that day)`, and the score is
@@ -44,7 +44,7 @@ Forecast next-quarter revenue and EPS with these models:
 - **Metrics.** Median and mean absolute percentage error, the share of quarters that beat the
   baseline, and the error by sector and by year. EPS errors are measured in dollars as well as
   percent, because percent blows up near zero.
-- **Pick on training years only.** Choose the model on 2015–2021, then report 2022–2026 once.
+- **Pick on training years only.** Choose the model on 2012–2021, then report 2022–2026 once.
   Write the selection rule down before looking.
 
 ## Phase 4: valuation (done)
@@ -53,7 +53,7 @@ Forecast next-quarter revenue and EPS with these models:
   fades to a terminal rate, and the terminal value.
 - Inputs default from the data (trailing growth, FCF margin) and are all adjustable.
 - A range: a grid of discount rates (8–11 %) × terminal growth rates (1.5–3 %), shown as fair
-  value per share against the current price.
+  value per share (compare it with the price yourself: prices are not part of this data).
 - Net debt and the diluted share count are taken from the latest balance sheet as of the date.
 
 ## Phase 5: React dashboard (done)
@@ -63,10 +63,10 @@ Forecast next-quarter revenue and EPS with these models:
   - **Company:** the quarter table (reported, forecast, surprise %) and the error over time.
   - **Valuation:** the range with assumption sliders.
   - **Coverage:** what is missing and why.
-- Each number links to its tag, filing date and accession number.
-- Deployed to GitHub Pages from the `data` branch build.
+- Each quarter shows its XBRL tag on hover; the company links to its SEC filings.
+- Deployed to GitHub Pages after every data build and every push to main.
 
-## Phase 6: live season
+## Phase 6: live season (next)
 
 - Freeze the forecasts for every company due to report next season, before they report, and
   timestamp the frozen file in git.
