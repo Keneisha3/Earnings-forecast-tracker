@@ -1,0 +1,52 @@
+name: data
+
+# Builds the point-in-time dataset from SEC filings on GitHub's machines and publishes it to the
+# "data" branch (the dashboard reads it from there). Weekly, and on demand from the Actions tab.
+# SEC asks for a User-Agent with a name and email: set the SEC_USER_AGENT secret, or pass one when
+# running it by hand (it is masked in the log and never saved).
+
+on:
+  workflow_dispatch:
+    inputs:
+      sec_user_agent:
+        description: "Optional 'Name email' for SEC (masked, never saved)"
+        required: false
+        default: ""
+      tickers:
+        description: "Optional tickers (blank = every company in eft/universe.py)"
+        required: false
+        default: ""
+  schedule:
+    - cron: "37 9 * * 6"  # Saturdays
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build from SEC filings
+        env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+          TICKERS: ${{ inputs.tickers }}
+        run: |
+          ua=$(jq -r '.inputs.sec_user_agent // ""' "$GITHUB_EVENT_PATH")
+          if [ -n "$ua" ]; then echo "::add-mask::$ua"; export SEC_USER_AGENT="$ua"; fi
+          [[ -z "$TICKERS" || "$TICKERS" =~ ^[A-Za-z0-9.\ -]+$ ]] || { echo "tickers: letters, digits, . - and spaces"; exit 1; }
+          python -m eft.build --out "$RUNNER_TEMP/data" $TICKERS
+      - name: Publish to the data branch
+        run: |
+          git config user.name "data-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch -q origin data || true
+          if git rev-parse -q --verify FETCH_HEAD >/dev/null; then git checkout -q -B data FETCH_HEAD; else git checkout -q --orphan data && git rm -rqf .; fi
+          mkdir -p companies && cp "$RUNNER_TEMP"/data/*.json companies/
+          git add companies
+          git commit -qm "Data: $(date -u +%F)" || echo "no change"
+          git push -q origin data

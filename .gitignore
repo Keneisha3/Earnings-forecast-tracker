@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+data/
+cache/
+.env
+node_modules/
+web/dist/
