@@ -1,0 +1,35 @@
+name: inspect
+
+# Lists the XBRL tags companies use (python -m eft.tags), for fixing coverage gaps.
+on:
+  workflow_dispatch:
+    inputs:
+      tickers:
+        description: "Tickers, e.g. 'XOM CVX'"
+        required: true
+      match:
+        description: "Regex on the tag name, e.g. 'Revenue|Sales'"
+        required: true
+      sec_user_agent:
+        description: "Optional 'Name email' for SEC (masked, never saved)"
+        required: false
+        default: ""
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+          TICKERS: ${{ inputs.tickers }}
+          MATCH: ${{ inputs.match }}
+        run: |
+          ua=$(jq -r '.inputs.sec_user_agent // ""' "$GITHUB_EVENT_PATH")
+          if [ -n "$ua" ]; then echo "::add-mask::$ua"; export SEC_USER_AGENT="$ua"; fi
+          [[ "$TICKERS" =~ ^[A-Za-z0-9.\ -]+$ ]] || { echo "tickers: letters, digits, . - and spaces"; exit 1; }
+          python -m eft.tags $TICKERS --match "$MATCH" | tee -a "$GITHUB_STEP_SUMMARY"
