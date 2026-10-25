@@ -16,7 +16,7 @@ measured forecast error comes out of phase 3.
 - Tests: tag switch, restatement, derived fourth quarter, cash flow reported only year to date,
   approximate EPS, an 8-K that is ignored, and offline build.
 
-## Phase 2: coverage report
+## Phase 2: coverage report (done)
 
 - Build all 40 companies. For each company-quarter, record which items are present and which
   tag was used.
@@ -26,7 +26,7 @@ measured forecast error comes out of phase 3.
 - Sanity checks: gross profit = revenue − cost of revenue where all three exist, and assets ≈
   liabilities + equity. Each disagreement is logged.
 
-## Phase 3: forecasts and the walk-forward test
+## Phase 3: forecasts and the walk-forward test (done)
 
 Forecast next-quarter revenue and EPS with these models:
 
@@ -47,7 +47,7 @@ Forecast next-quarter revenue and EPS with these models:
 - **Pick on training years only.** Choose the model on 2015–2021, then report 2022–2026 once.
   Write the selection rule down before looking.
 
-## Phase 4: valuation
+## Phase 4: valuation (done)
 
 - A three-stage DCF on free cash flow: trailing twelve months, years 1–5 at a growth rate that
   fades to a terminal rate, and the terminal value.
@@ -56,7 +56,7 @@ Forecast next-quarter revenue and EPS with these models:
   value per share against the current price.
 - Net debt and the diluted share count are taken from the latest balance sheet as of the date.
 
-## Phase 5: React dashboard
+## Phase 5: React dashboard (done)
 
 - Vite + React + TypeScript and a charting library. It reads the published JSON, with no backend.
 - Views:
