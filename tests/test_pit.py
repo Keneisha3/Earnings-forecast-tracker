@@ -93,6 +93,28 @@ class PointInTime(unittest.TestCase):
         self.assertEqual([x[3] for x in tl], ["SalesRevenueNet", "RevenueFromContractWithCustomerExcludingAssessedTax"])
 
 
+class LongQuartersAndDerivedItems(unittest.TestCase):
+    def test_sixteen_week_fourth_quarter(self):
+        # 12, 12, 12 and 16 weeks (Costco, PepsiCo): Q4 = the 52-week year minus 36 weeks
+        rev = [fact("2023-01-01", "2023-03-25", 100, "2023-04-20"),
+               fact("2023-01-01", "2023-06-17", 210, "2023-07-15", fp="Q2"),
+               fact("2023-01-01", "2023-09-09", 330, "2023-10-10", fp="Q3"),
+               fact("2023-01-01", "2023-12-30", 500, "2024-02-10", form="10-K", fp="FY")]
+        rec = pit.build({"facts": {"us-gaap": {"Revenues": {"units": {"USD": rev}}}}})
+        self.assertEqual(pit.reported(rec, "revenue", "2023-12-30"), (170, "2024-02-10", "derived"))
+        self.assertEqual(pit.reported(rec, "revenue", "2023-06-17")[0], 110)
+
+    def test_gross_profit_and_liabilities_derived_when_not_reported(self):
+        g = {"Revenues": {"units": {"USD": [fact("2023-01-01", "2023-03-31", 100, "2023-05-01")]}},
+             "CostOfRevenue": {"units": {"USD": [fact("2023-01-01", "2023-03-31", 60, "2023-05-01")]}},
+             "LiabilitiesAndStockholdersEquity": {"units": {"USD": [fact(None, "2023-03-31", 900, "2023-05-01")]}},
+             "StockholdersEquity": {"units": {"USD": [fact(None, "2023-03-31", 300, "2023-05-01")]}}}
+        rec = pit.build({"facts": {"us-gaap": g}})
+        self.assertEqual(pit.reported(rec, "gross_profit", "2023-03-31"), (40, "2023-05-01", "derived"))
+        self.assertEqual(pit.reported(rec, "total_liabilities", "2023-03-31")[0], 600)
+        self.assertNotIn("liabilities_and_equity", rec["quarters"]["2023-03-31"]["items"])  # helpers removed
+
+
 class Build(unittest.TestCase):
     def test_offline_build_writes_one_file_per_company(self):
         src, out = tempfile.mkdtemp(), tempfile.mkdtemp()

@@ -34,10 +34,17 @@ ITEMS = {
     "total_liabilities": ("balance", INSTANT, "USD", ["Liabilities"]),
     "equity": ("balance", INSTANT, "USD", [
         "StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"]),
-    "long_term_debt": ("balance", INSTANT, "USD", ["LongTermDebtNoncurrent", "LongTermDebt"]),
+    "long_term_debt": ("balance", INSTANT, "USD", [
+        "LongTermDebtNoncurrent", "LongTermDebtAndCapitalLeaseObligations", "LongTermDebt"]),
+    # helpers: only used to derive an item a company does not report (removed from the output)
+    "liabilities_and_equity": ("balance", INSTANT, "USD", ["LiabilitiesAndStockholdersEquity"]),
+    "equity_total": ("balance", INSTANT, "USD", [
+        "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest", "StockholdersEquity"]),
     # cash flow
     "operating_cash_flow": ("cash_flow", FLOW, "USD", ["NetCashProvidedByUsedInOperatingActivities"]),
-    "capex": ("cash_flow", FLOW, "USD", ["PaymentsToAcquirePropertyPlantAndEquipment"]),
+    "capex": ("cash_flow", FLOW, "USD", [
+        "PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets",
+        "PaymentsToAcquireOtherPropertyPlantAndEquipment"]),
 }
 
 # Items that are not additive across quarters: a quarter derived from year-to-date totals is an
@@ -45,3 +52,5 @@ ITEMS = {
 NOT_ADDITIVE = {"eps_diluted", "shares_diluted"}
 
 FORMS = ("10-Q", "10-K", "10-Q/A", "10-K/A")
+
+HELPERS = ("liabilities_and_equity", "equity_total")

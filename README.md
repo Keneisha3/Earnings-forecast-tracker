@@ -11,8 +11,38 @@ companies actually reported, and a simple DCF valuation range.
 - **What it is not:** analyst consensus. Consensus data is paid. Forecasts are compared with
   transparent baselines, starting with the same quarter last year.
 
-Status: phase 1 (the data layer) is done. See [docs/PLAN.md](docs/PLAN.md) for the rest and
-[docs/PRODUCT.md](docs/PRODUCT.md) for who it is for and what was left out.
+**Dashboard:** https://keneisha3.github.io/Earnings-forecast-tracker/ · **Product brief:**
+[docs/PRODUCT.md](docs/PRODUCT.md) · **Plan:** [docs/PLAN.md](docs/PLAN.md)
+
+## Results
+
+Walk-forward over 2,507 company-quarters from 40 companies, 2012-2026. Each forecast uses only
+filings available the day before the quarter's report, and is scored on the first reported
+number. Models were chosen on 2012-2021 by a rule written before any results
+([docs/RESULTS.md](docs/RESULTS.md)). The numbers below are the held-out years, 2022 onwards:
+
+| Target | Chosen model | Median error | Baseline (same quarter last year) | Closer than the baseline |
+| --- | --- | ---: | ---: | ---: |
+| Revenue | Seasonal growth | **4.3 %** | 7.4 % | 62 % of 771 quarters |
+| Diluted EPS | Last year's margin on the forecast revenue | **20.0 %** ($0.36) | 23.8 % ($0.44) | 55 % of 571 quarters |
+
+Where it does **not** work:
+- **Energy.** Chevron and ConocoPhillips: 16.6 % against 12.6 % for the baseline. Oil prices
+  turn, and extrapolating last year's growth makes it worse.
+- **Industrials.** No better than the baseline (6.0 % both).
+- **EPS.** Mean errors stay large because one-off charges and gains swamp any model built
+  on history.
+
+The regression (M2) has the lowest held-out *mean* revenue error (8.2 %). It was not chosen,
+because the rule picks on the training median, and it is reported as is.
+
+Data fixes made after the first run touched coverage only, never the models:
+- 16- and 17-week quarters (Costco, PepsiCo).
+- Derived gross profit and total liabilities.
+- More capex and debt tags.
+- ConocoPhillips in place of ExxonMobil, whose SEC company facts start in 2025.
+
+[docs/COVERAGE.md](docs/COVERAGE.md) has the item-by-item coverage per company.
 
 ## Use
 
@@ -21,7 +51,11 @@ Python 3.10+, standard library only for the data layer.
 ```bash
 export SEC_USER_AGENT="Your Name you@example.com"   # SEC requires it
 python -m eft.build --out data --cache cache AAPL MSFT
+python -m eft.coverage --data data          # what is missing and why
+python -m eft.evaluate --data data          # the walk-forward test
+python -m eft.export --data data            # data/dashboard.json for the dashboard
 python -m unittest discover -s tests -t .
+cd web && npm ci && cp ../data/dashboard.json public/ && npm run dev
 ```
 
 ```python
