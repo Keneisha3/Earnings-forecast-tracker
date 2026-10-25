@@ -20,10 +20,10 @@ value is only "known" once both of its parts were filed, and its date is the lat
 import bisect
 import datetime as dt
 
-from .items import FLOW, FORMS, ITEMS, NOT_ADDITIVE
+from .items import FLOW, FORMS, HELPERS, ITEMS, NOT_ADDITIVE
 
-QUARTER = (80, 100)                               # days in a quarter (13 or 14 weeks, or 3 months)
-YTD = ((80, 100), (170, 195), (260, 285), (350, 380))  # quarter, half, nine months, year
+QUARTER = (80, 115)  # days in a quarter: 12 to 16 weeks (Costco and PepsiCo have a 16-week quarter)
+YTD = ((80, 115), (160, 200), (245, 290), (350, 380))  # quarter, half, nine months, year
 
 
 def _d(s):
@@ -162,11 +162,35 @@ def build(companyfacts, ticker=None):
                     if not tl or tl[-1][1] != val:
                         tl.append([filed, val, "reported", concept])
                 quarters.setdefault(end, {"fy": None, "fp": None, "items": {}})["items"][item] = tl
+    for q in quarters.values():  # items many companies leave out, derived from ones they report
+        it = q["items"]
+        if "gross_profit" not in it and "revenue" in it and "cost_of_revenue" in it:
+            tl = combine(it["revenue"], it["cost_of_revenue"], lambda a, b: a - b)
+            if tl:
+                it["gross_profit"] = tl
+        if "total_liabilities" not in it and "liabilities_and_equity" in it and "equity_total" in it:
+            tl = combine(it["liabilities_and_equity"], it["equity_total"], lambda a, b: a - b)
+            if tl:
+                it["total_liabilities"] = tl
+        for helper in HELPERS:
+            it.pop(helper, None)
     # keep only quarter ends that have a flow item: balance sheets also report odd dates
     quarters = {e: q for e, q in quarters.items()
                 if any(ITEMS[i][1] == FLOW for i in q["items"])}
     return {"ticker": ticker, "cik": companyfacts.get("cik"), "name": companyfacts.get("entityName"),
             "quarters": dict(sorted(quarters.items()))}
+
+
+def combine(a, b, op):
+    """A derived timeline from two others: op(a, b) each time either changed, once both are known."""
+    out = []
+    for day in sorted({x[0] for x in a} | {x[0] for x in b}):
+        va, vb = _latest(a, day), _latest(b, day)
+        if va and vb:
+            v = op(va[1], vb[1])
+            if not out or out[-1][1] != v:
+                out.append([day, v, "derived", "%s - %s" % (va[3], vb[3])])
+    return out
 
 
 def as_of(record, item, end, day):

@@ -12,7 +12,7 @@ import datetime as dt
 import sys
 
 from . import evaluate, pit
-from .items import ITEMS
+from .items import HELPERS, ITEMS
 
 SINCE = "2012-01-01"
 
@@ -28,7 +28,7 @@ def _gaps(ends):
 
 def company(rec, since=SINCE):
     ends = [e for e in rec["quarters"] if e >= since and pit.reported(rec, "revenue", e)]
-    have = {i: sum(1 for e in ends if pit.reported(rec, i, e)) for i in ITEMS}
+    have = {i: sum(1 for e in ends if pit.reported(rec, i, e)) for i in ITEMS if i not in HELPERS}
     gp_bad = 0
     for e in ends:
         r, c, g = (pit.reported(rec, i, e) for i in ("revenue", "cost_of_revenue", "gross_profit"))
@@ -40,7 +40,7 @@ def company(rec, since=SINCE):
 
 def report(records):
     rows = {t: company(r) for t, r in sorted(records.items())}
-    items = list(ITEMS)
+    items = [i for i in ITEMS if i not in HELPERS]
     L = ["# Coverage", "", "Company-quarters since %s with reported revenue, and the share of them with each item." % SINCE, "",
          "| company | quarters | first | gaps | " + " | ".join(items) + " |",
          "| --- | ---: | --- | ---: | " + " | ".join("---:" for _ in items) + " |"]
