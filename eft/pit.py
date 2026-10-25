@@ -22,8 +22,9 @@ import datetime as dt
 
 from .items import FLOW, FORMS, HELPERS, ITEMS, NOT_ADDITIVE
 
-QUARTER = (80, 115)  # days in a quarter: 12 to 16 weeks (Costco and PepsiCo have a 16-week quarter)
-YTD = ((80, 115), (160, 200), (245, 290), (350, 380))  # quarter, half, nine months, year
+QUARTER = (80, 122)  # days in a quarter: 12 to 17 weeks (Costco and PepsiCo end the year with a 16-week
+                     # quarter, 17 weeks in a 53-week year)
+YTD = ((80, 122), (160, 200), (245, 290), (350, 380))  # quarter, half, nine months, year
 
 
 def _d(s):
