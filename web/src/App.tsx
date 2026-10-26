@@ -192,12 +192,12 @@ function QuarterTable({ qs, chosen }: { qs: Quarter[]; chosen: { revenue: Model;
           <thead>
             <tr>
               <th>Quarter</th>
-              <th>Reported</th>
+              <th className="wide">Reported</th>
               <th className="num">Revenue</th>
-              <th className="num">Forecast</th>
+              <th className="num wide">Forecast</th>
               <th className="num">Surprise</th>
               <th className="num">EPS</th>
-              <th className="num">Forecast</th>
+              <th className="num wide">Forecast</th>
               <th className="num">Surprise</th>
             </tr>
           </thead>
@@ -205,17 +205,18 @@ function QuarterTable({ qs, chosen }: { qs: Quarter[]; chosen: { revenue: Model;
             {qs.map((q) => (
               <tr key={q.end}>
                 <td title={q.revenue_tag ?? ""}>
-                  {q.end} <span className="muted">{q.fp}</span>
+                  <span className="wide">{q.end}</span>
+                  <span className="narrow-only">{q.end.slice(0, 7)}</span> <span className="muted">{q.fp}</span>
                 </td>
-                <td>{q.reported}</td>
+                <td className="wide">{q.reported}</td>
                 <td className="num">{money(q.revenue)}</td>
-                <td className="num">{money(q.revenue_forecast[chosen.revenue])}</td>
+                <td className="num wide">{money(q.revenue_forecast[chosen.revenue])}</td>
                 <td className={`num ${cls(q.revenue_surprise)}`}>{signedPct(q.revenue_surprise)}</td>
                 <td className="num" title={q.eps_how === "approx" ? "derived from year-to-date totals: approximate" : ""}>
                   {eps(q.eps)}
                   {q.eps_how === "approx" ? "*" : ""}
                 </td>
-                <td className="num">{eps(q.eps_forecast[chosen.eps])}</td>
+                <td className="num wide">{eps(q.eps_forecast[chosen.eps])}</td>
                 <td className={`num ${cls(q.eps_surprise)}`}>{signedPct(q.eps_surprise)}</td>
               </tr>
             ))}
@@ -225,6 +226,7 @@ function QuarterTable({ qs, chosen }: { qs: Quarter[]; chosen: { revenue: Model;
       <p className="muted small">
         Surprise = (reported − forecast) ÷ forecast, against the chosen model. Forecasts were made the day before each
         report. * EPS derived from year-to-date totals (approximate). Hover a quarter for the XBRL tag.
+        <span className="narrow-only"> On a small screen the forecast and report-date columns are hidden: widen the window to see them.</span>
       </p>
     </section>
   );
