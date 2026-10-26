@@ -64,6 +64,13 @@ th { font-size: 12px; color: var(--muted); font-weight: 600; }
 .bar { height: 8px; background: var(--grid); border-radius: 4px; overflow: hidden; }
 .bar i { display: block; height: 100%; background: var(--c1); }
 footer { margin-top: 24px; font-size: 13px; }
+.narrow-only { display: none; }
 @media (max-width: 760px) {
   .grid3, .grid2 { grid-template-columns: 1fr; }
+  .card { padding: 12px; }
+}
+@media (max-width: 760px), print {
+  .wide { display: none; }
+  .narrow-only { display: inline; }
+  th, td { padding: 6px 3px; font-size: 13px; }
 }
